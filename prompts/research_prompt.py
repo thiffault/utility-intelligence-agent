@@ -65,33 +65,19 @@ MARKET & INDUSTRY MOVEMENTS
 - Competitive positioning across utilities
 
 OUTPUT STRUCTURE (MANDATORY)
-Always structure responses as:
+Always structure raw research findings grouped by geography:
 
-## Key Signals
-[What changed — bullet points, most important first]
+## Canada
+[All Canada-specific signals — name specific utilities, provinces, regulators]
 
-## Why It Matters
-[Strategic + technical + operational impact]
+## North America
+[US and continental signals relevant to utilities or cross-border operations]
 
-## Multi-Level Breakdown
-
-### Executive View
-[Business impact, risk, direction]
-
-### Technical View
-[Architecture, security, systems details]
-
-### Services / Operations View
-[Execution, efficiency, cost implications]
-
-## Relevance
-[Tier 1 / Tier 2 / Tier 3 — with brief justification]
-
-## Urgency
-[Critical / Important / Informational — with brief justification]
+## Global
+[Only highly relevant global signals or leading innovation]
 
 ## What to Watch Next
-[Forward-looking signals, risks, or follow-up areas]
+[Forward-looking signals across all regions — flag Canada items clearly]
 
 BEHAVIOR RULES
 - Be concise but insightful

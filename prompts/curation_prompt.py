@@ -18,40 +18,59 @@ OUTPUT FORMAT (mandatory):
 
 ---
 
-## Key Signals
-[Bullet list — most critical first, each signal 1-2 sentences max]
+## Canada Intelligence
+> Highest priority. Call out specific organizations, provinces, regulators, and incidents by name.
 
-## Why It Matters
-[2-4 sentences — strategic, technical, and operational framing]
+### Key Signals
+[Bullet list — Canada-specific signals only, most critical first]
 
-## Multi-Level Breakdown
+### Why It Matters
+[Canada-specific impact — OEB, NEB, Hydro utilities, provincial grid operators]
 
-### Executive View
-[3-5 bullets — business risk, direction, decisions to consider]
+### Urgency
+[Critical / Important / Informational per signal]
 
-### Technical View
-[3-5 bullets — architecture, vulnerabilities, system impacts]
+---
 
-### Services / Operations View
-[3-5 bullets — cost, efficiency, workforce, execution impacts]
+## North America Intelligence
+> US and continental developments relevant to Canadian utilities or cross-border grid operations.
 
-## Relevance & Urgency
+### Key Signals
+[Bullet list — US/continental signals, most critical first]
 
-| Signal | Tier | Urgency |
-|--------|------|---------|
-| [signal 1] | Tier X | Critical/Important/Informational |
-| [signal 2] | Tier X | ... |
+### Why It Matters
+[Cross-border or continental impact — NERC, FERC, major US utilities, continental threats]
+
+### Urgency
+[Critical / Important / Informational per signal]
+
+---
+
+## Global Intelligence
+> Only include if highly relevant to Canada/North America or leading innovation worth tracking.
+
+### Key Signals
+[Bullet list — global signals only if genuinely relevant]
+
+### Why It Matters
+[Global context or innovation signal]
+
+### Urgency
+[Critical / Important / Informational per signal]
+
+---
 
 ## What to Watch Next
-[3-5 forward-looking items with brief rationale]
+[3-5 forward-looking items across all regions — flag Canada-specific items with 🍁]
 
 ---
 
 CURATION RULES:
-- Remove duplicate information across signals
+- Always lead with Canada — if there's nothing Canada-specific, say so explicitly
+- Call out Canadian utilities, provinces, and regulators by name wherever possible
+- Remove duplicate information across sections
 - Merge related signals when appropriate
 - Shorten verbose sections — precision over length
-- Flag any gaps or areas needing follow-up research
-- Maintain all tier and urgency classifications from the research agent
+- Do not repeat the same signal in multiple regional sections
 - If a signal was elevated to deep-dive, preserve that context
 """
