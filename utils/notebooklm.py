@@ -1,92 +1,64 @@
 """
 NotebookLM Integration
 
-Uploads intelligence reports to Google NotebookLM as sources.
+Adds intelligence reports to the "Utility Intelligence Agent — Daily Briefs"
+NotebookLM notebook using the notebooklm CLI.
 
-SETUP REQUIRED:
-1. Enable Google Drive API in Google Cloud Console
-2. Create a service account and download credentials JSON
-3. Set GOOGLE_SERVICE_ACCOUNT_JSON env var to the path of the credentials file
-4. Set NOTEBOOKLM_DRIVE_FOLDER_ID env var to the target Google Drive folder ID
-   (Reports uploaded here automatically appear as sources in a linked NotebookLM notebook)
-
-HOW IT WORKS:
-- Reports are uploaded to a designated Google Drive folder as .md files
-- In NotebookLM, add that Drive folder as a source — new reports auto-sync
-
-ALTERNATIVE (manual):
-- Download any report from the output/ folder
-- Upload directly to NotebookLM via the web UI
+REQUIREMENTS:
+- notebooklm CLI installed and authenticated (run `notebooklm login` once)
 """
 
-import os
-from pathlib import Path
+import subprocess
 
-_drive_available = False
-
-try:
-    from google.oauth2 import service_account
-    from googleapiclient.discovery import build
-    from googleapiclient.http import MediaFileUpload
-    _drive_available = True
-except ImportError:
-    pass
+NOTEBOOK_ID = "58e1284f-beb5-41a3-8c14-b300637aa5aa"
+NOTEBOOK_NAME = "Utility Intelligence Agent — Daily Briefs"
 
 
-def upload_to_drive(filepath: str) -> str | None:
+def upload_report(filepath: str) -> str | None:
     """
-    Upload a report file to Google Drive.
+    Add a saved report file as a source in the NotebookLM notebook.
 
     Args:
-        filepath: Local path to the report file.
+        filepath: Local path to the report .md file.
 
     Returns:
-        Google Drive file URL, or None if upload failed.
+        Success message or error string.
     """
-    if not _drive_available:
-        return None
-
-    creds_path = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
-    folder_id = os.environ.get("NOTEBOOKLM_DRIVE_FOLDER_ID")
-
-    if not creds_path or not folder_id:
-        print("[NotebookLM] Google Drive not configured. Set GOOGLE_SERVICE_ACCOUNT_JSON and NOTEBOOKLM_DRIVE_FOLDER_ID.")
-        return None
-
     try:
-        credentials = service_account.Credentials.from_service_account_file(
-            creds_path,
-            scopes=["https://www.googleapis.com/auth/drive.file"]
+        # Switch to the target notebook
+        result = subprocess.run(
+            ["notebooklm", "use", NOTEBOOK_NAME],
+            capture_output=True, text=True, timeout=30
         )
-        service = build("drive", "v3", credentials=credentials)
+        if result.returncode != 0:
+            return f"Failed to select notebook: {result.stderr.strip()}"
 
-        file_path = Path(filepath)
-        file_metadata = {
-            "name": file_path.name,
-            "parents": [folder_id],
-            "mimeType": "text/markdown"
-        }
-        media = MediaFileUpload(filepath, mimetype="text/markdown")
+        # Add the report file as a source
+        result = subprocess.run(
+            ["notebooklm", "source", "add", "--file", filepath],
+            capture_output=True, text=True, timeout=60
+        )
+        if result.returncode != 0:
+            return f"Failed to add source: {result.stderr.strip()}"
 
-        uploaded = service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields="id, webViewLink"
-        ).execute()
+        print(f"[NotebookLM] Added to notebook: {filepath}")
+        return f"Added to NotebookLM: {NOTEBOOK_NAME}"
 
-        url = uploaded.get("webViewLink", "")
-        print(f"[NotebookLM] Uploaded to Drive: {url}")
-        return url
-
+    except subprocess.TimeoutExpired:
+        return "NotebookLM upload timed out."
+    except FileNotFoundError:
+        return "notebooklm CLI not found. Run `notebooklm login` to set up."
     except Exception as e:
-        print(f"[NotebookLM] Upload failed: {e}")
-        return None
+        return f"NotebookLM error: {e}"
 
 
 def is_configured() -> bool:
-    """Check if Google Drive integration is configured."""
-    return (
-        _drive_available
-        and bool(os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON"))
-        and bool(os.environ.get("NOTEBOOKLM_DRIVE_FOLDER_ID"))
-    )
+    """Check if the notebooklm CLI is available and authenticated."""
+    try:
+        result = subprocess.run(
+            ["notebooklm", "auth", "check"],
+            capture_output=True, text=True, timeout=10
+        )
+        return "Authentication is valid" in result.stdout
+    except Exception:
+        return False

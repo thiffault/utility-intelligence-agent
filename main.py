@@ -8,7 +8,7 @@ load_dotenv()
 from agents.research_agent import run_research
 from agents.curation_agent import run_curation
 from utils.formatter import save_report, list_reports, load_report
-from utils.notebooklm import upload_to_drive, is_configured
+from utils.notebooklm import upload_report, is_configured
 
 
 # ── Pipeline ────────────────────────────────────────────────────────────────
@@ -66,8 +66,7 @@ def handle_notebooklm_upload(filepath_state):
             "Set GOOGLE_SERVICE_ACCOUNT_JSON and NOTEBOOKLM_DRIVE_FOLDER_ID in your .env file.\n"
             "See utils/notebooklm.py for setup instructions."
         )
-    url = upload_to_drive(filepath_state)
-    return f"Uploaded to Drive: {url}" if url else "Upload failed. Check logs."
+    return upload_report(filepath_state)
 
 
 def handle_load_report(report_name, reports_cache):
