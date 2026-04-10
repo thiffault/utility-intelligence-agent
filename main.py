@@ -87,7 +87,7 @@ def refresh_reports():
 # ── UI ───────────────────────────────────────────────────────────────────────
 
 def build_ui():
-    with gr.Blocks(title="Utility Intelligence Agent", theme=gr.themes.Soft()) as app:
+    with gr.Blocks(title="Utility Intelligence Agent") as app:
 
         gr.Markdown("""
 # Utility Intelligence Agent
@@ -204,7 +204,7 @@ Elite sector intelligence powered by Claude + real-time web research.
 # ── Entry Point ──────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    required = ["ANTHROPIC_API_KEY", "TAVILY_API_KEY"]
+    required = ["ANTHROPIC_API_KEY"]
     missing = [k for k in required if not os.environ.get(k)]
     if missing:
         print(f"Missing required environment variables: {', '.join(missing)}")
@@ -212,4 +212,4 @@ if __name__ == "__main__":
         exit(1)
 
     app = build_ui()
-    app.launch(share=False, server_port=7860)
+    app.launch(share=False, server_port=7860, theme=gr.themes.Soft())
