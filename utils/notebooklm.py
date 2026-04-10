@@ -25,17 +25,17 @@ def upload_report(filepath: str) -> str | None:
         Success message or error string.
     """
     try:
-        # Switch to the target notebook
+        # Switch to the target notebook using ID (name has special chars that cause RPC errors)
         result = subprocess.run(
-            ["notebooklm", "use", NOTEBOOK_NAME],
+            ["notebooklm", "use", NOTEBOOK_ID],
             capture_output=True, text=True, timeout=30
         )
         if result.returncode != 0:
             return f"Failed to select notebook: {result.stderr.strip()}"
 
-        # Add the report file as a source
+        # Add the report file as a source (filepath passed as CONTENT argument)
         result = subprocess.run(
-            ["notebooklm", "source", "add", "--file", filepath],
+            ["notebooklm", "source", "add", filepath],
             capture_output=True, text=True, timeout=60
         )
         if result.returncode != 0:
