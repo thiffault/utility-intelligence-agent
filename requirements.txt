@@ -1,0 +1,10 @@
+anthropic>=0.40.0
+tavily-python>=0.5.0
+gradio>=4.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# Optional: Google Drive / NotebookLM integration
+# Uncomment to enable automatic upload to Drive
+# google-auth>=2.0.0
+# google-api-python-client>=2.0.0
