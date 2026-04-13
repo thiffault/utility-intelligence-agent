@@ -1,22 +1,35 @@
 import os
+import re
 import anthropic
 from prompts.research_prompt import RESEARCH_SYSTEM_PROMPT, DEFAULT_RESEARCH_QUERY
 
 
-def run_research(query: str = None, manual_content: str = None) -> str:
+def _extract_urls(text: str) -> list[dict]:
+    """Extract URLs and their link text from markdown and plain text."""
+    sources = {}
+
+    # Markdown links: [title](url)
+    for title, url in re.findall(r'\[([^\]]+)\]\((https?://[^\)]+)\)', text):
+        if url not in sources:
+            sources[url] = title.strip()
+
+    # Bare URLs not already captured
+    for url in re.findall(r'(?<!\()(https?://[^\s\)\]"\'>,]+)', text):
+        if url not in sources:
+            sources[url] = url
+
+    return [{"url": url, "title": title} for url, title in sources.items()]
+
+
+def run_research(query: str = None, manual_content: str = None) -> tuple[str, list[dict]]:
     """
     Run the research agent using Anthropic's built-in web search tool.
 
-    Args:
-        query: Optional custom research query. Defaults to the standard current-state analysis.
-        manual_content: Optional manually provided text or document content to include.
-
     Returns:
-        Structured intelligence report as a string.
+        (report_text, sources) where sources is a list of {"url", "title"} dicts.
     """
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
-    # Anthropic's built-in web search — no external API key required
     tools = [{"type": "web_search_20250305", "name": "web_search"}]
 
     user_message = query if query else DEFAULT_RESEARCH_QUERY
@@ -28,11 +41,10 @@ def run_research(query: str = None, manual_content: str = None) -> str:
         )
 
     messages = [{"role": "user", "content": user_message}]
+    all_text = []
 
     print("[Research Agent] Starting research...")
 
-    # Agentic loop — Anthropic executes web_search server-side;
-    # we pass results back until the model reaches end_turn.
     while True:
         response = client.messages.create(
             model="claude-opus-4-6",
@@ -42,18 +54,22 @@ def run_research(query: str = None, manual_content: str = None) -> str:
             messages=messages
         )
 
+        # Collect all text blocks across turns for URL extraction
+        for block in response.content:
+            if hasattr(block, "text"):
+                all_text.append(block.text)
+
         if response.stop_reason == "end_turn":
-            text_blocks = [block.text for block in response.content if hasattr(block, "text")]
-            print("[Research Agent] Research complete.")
-            return "\n".join(text_blocks)
+            full_text = "\n".join(all_text)
+            sources = _extract_urls(full_text)
+            print(f"[Research Agent] Research complete. {len(sources)} sources found.")
+            return full_text, sources
 
         if response.stop_reason == "tool_use":
-            # Log each search query for visibility
             for block in response.content:
                 if block.type == "tool_use" and block.name == "web_search":
                     print(f"[Research Agent] Searching: {block.input.get('query', '')}")
 
-            # Pass assistant turn + tool results back — Anthropic fills in the results
             messages.append({"role": "assistant", "content": response.content})
             messages.append({
                 "role": "user",
@@ -61,7 +77,7 @@ def run_research(query: str = None, manual_content: str = None) -> str:
                     {
                         "type": "tool_result",
                         "tool_use_id": block.id,
-                        "content": "",  # Built-in tool: Anthropic injects results server-side
+                        "content": "",
                     }
                     for block in response.content
                     if block.type == "tool_use"
@@ -69,5 +85,5 @@ def run_research(query: str = None, manual_content: str = None) -> str:
             })
 
         else:
-            text_blocks = [block.text for block in response.content if hasattr(block, "text")]
-            return "\n".join(text_blocks) if text_blocks else "No output generated."
+            full_text = "\n".join(all_text)
+            return full_text, _extract_urls(full_text)
